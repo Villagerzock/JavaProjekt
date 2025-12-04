@@ -1,0 +1,7 @@
+{
+  "tile_size": 8,
+  "values": {
+    "button": [0, 66, 200, 20],
+    "button_hovered": [0,86,200,20]
+  }
+}

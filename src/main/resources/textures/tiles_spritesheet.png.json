@@ -1,0 +1,12 @@
+{
+  "tile_size": 64,
+  "values": {
+    "questionmark_block": [0, 0, 1, 1],
+    "stone": [1,0,1,1],
+    "exit_part_1": [2,0,1,1],
+    "exit_part_2": [3,0,1,1],
+
+    "player_walk_1": [4,0,2,4],
+    "player_walk_2": [6,0,2,4]
+  }
+}
