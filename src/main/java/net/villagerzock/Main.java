@@ -107,7 +107,9 @@ public class Main {
     private static boolean drawingUnderworld;
     @Getter
     private static TextureLoader.TextureArray textures;
-    public static void main(String[] args) {
+    private static String[] args;
+    public static int run(String[] args) {
+        Main.args = args;
 
         System.out.println(String.format("Amount of Loadables: %d\nLoadables: %s", loadables.length, Arrays.toString(loadables)));
 
@@ -329,6 +331,7 @@ public class Main {
                 }
             }
         },0,10);
+        return 0;
     }
 
     private static Vector2i onScreenPosToWorldPos(Vector2i screenPos) {

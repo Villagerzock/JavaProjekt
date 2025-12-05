@@ -1,0 +1,98 @@
+{
+  "main": {
+    "jarAsset": "JavaProjekt-1.0-SNAPSHOT.jar",
+    "mainClass": "net.villagerzock.Launch",
+    "jvmArgs": [
+      "-Xmx2G",
+      "-Xms1G"
+    ]
+  },
+
+  "libs": [
+    {
+      "groupId": "org.lwjgl",
+      "artifactId": "lwjgl",
+      "version": "3.3.2",
+      "repo": "central"
+    },
+    {
+      "groupId": "org.lwjgl",
+      "artifactId": "lwjgl-glfw",
+      "version": "3.3.2",
+      "repo": "central"
+    },
+    {
+      "groupId": "org.lwjgl",
+      "artifactId": "lwjgl-opengl",
+      "version": "3.3.2",
+      "repo": "central"
+    },
+    {
+      "groupId": "org.lwjgl",
+      "artifactId": "lwjgl-stb",
+      "version": "3.3.1",
+      "repo": "central"
+    },
+    {
+      "groupId": "org.joml",
+      "artifactId": "joml",
+      "version": "1.10.5",
+      "repo": "central"
+    },
+    {
+      "groupId": "com.google.code.gson",
+      "artifactId": "gson",
+      "version": "2.13.1",
+      "repo": "central"
+    },
+    {
+      "groupId": "org.projectlombok",
+      "artifactId": "lombok",
+      "version": "1.18.38",
+      "repo": "central"
+    },
+    {
+      "groupId": "net.villagerzock",
+      "artifactId": "LaunchInjector",
+      "version": "1.0",
+      "repo": "villagerrepo"
+    }
+  ],
+
+  "natives": {
+    "windows": {
+      "artifacts": [
+        {
+          "groupId": "org.lwjgl",
+          "artifactId": "lwjgl",
+          "version": "3.3.2",
+          "classifier": "natives-windows",
+          "repo": "central"
+        },
+        {
+          "groupId": "org.lwjgl",
+          "artifactId": "lwjgl-stb",
+          "version": "3.3.2",
+          "classifier": "natives-windows",
+          "repo": "central"
+        }
+      ],
+      "extractTo": "natives/windows",
+      "javaLibraryPath": "natives/windows"
+    },
+    "linux": {
+      "artifacts": [],
+      "extractTo": "natives/linux",
+      "javaLibraryPath": "natives/linux"
+    },
+    "macos": {
+      "artifacts": [],
+      "extractTo": "natives/macos",
+      "javaLibraryPath": "natives/macos"
+    }
+  },
+  "repos": {
+    "central": "https://repo1.maven.org/maven2/",
+    "villagerrepo": "http://45.93.249.136:8080/releases/"
+  }
+}

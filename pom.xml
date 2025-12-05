@@ -7,15 +7,23 @@
     <groupId>net.villagerzock</groupId>
     <artifactId>JavaProjekt</artifactId>
     <version>1.0-SNAPSHOT</version>
-
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lwjgl.version>3.3.2</lwjgl.version>
-    </properties>
+    <packaging>jar</packaging>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>net.villagerzock.Launch</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -26,6 +34,29 @@
             </plugin>
         </plugins>
     </build>
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lwjgl.version>3.3.2</lwjgl.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>reposilite-releases</id>
+            <url>http://45.93.249.136:8080/releases</url>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>reposilite-releases</id>
+            <url>http://45.93.249.136:8080/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>reposilite-snapshots</id>
+            <url>http://45.93.249.136:8080/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
     <dependencies>
         <!-- Core LWJGL -->
         <dependency>
@@ -34,7 +65,7 @@
             <version>${lwjgl.version}</version>
         </dependency>
 
-        <!-- Optional: Bindings / native libraries — je nach Zielplattform -->
+        <!-- GLFW + OpenGL -->
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-glfw</artifactId>
@@ -46,7 +77,14 @@
             <version>${lwjgl.version}</version>
         </dependency>
 
-        <!-- Natives für Deine Plattform (z. B. Windows). Bei Multi-Plattform ggf. mehrere dependencies -->
+        <!-- STB (Java-Bindings) -->
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-stb</artifactId>
+            <version>${lwjgl.version}</version>
+        </dependency>
+
+        <!-- Natives (Windows) -->
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>
@@ -59,37 +97,33 @@
             <version>${lwjgl.version}</version>
             <classifier>natives-windows</classifier>
         </dependency>
+
+        <!-- JOML -->
         <dependency>
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
             <version>1.10.5</version>
         </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-stb</artifactId>
-            <version>3.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>net.villagerzock</groupId>
-            <artifactId>JavaProjekt</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
+
+        <!-- Gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.13.1</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.13.2</version>
-        </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
-    </dependencies>
 
+        <dependency>
+            <groupId>net.villagerzock</groupId>
+            <artifactId>LaunchInjector</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
 </project>
