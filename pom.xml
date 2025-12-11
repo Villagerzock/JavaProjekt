@@ -125,5 +125,6 @@
             <artifactId>LaunchInjector</artifactId>
             <version>1.22</version>
         </dependency>
+
     </dependencies>
 </project>
