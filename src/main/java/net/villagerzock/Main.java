@@ -5,8 +5,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.Getter;
+import net.villagerzock.important.ModContainer;
 import net.villagerzock.input.KeyBindingManager;
 import net.villagerzock.input.KeyBinds;
+import net.villagerzock.modding.ModInitializer;
 import net.villagerzock.text.Text;
 import net.villagerzock.text.TextRenderer;
 import net.villagerzock.text.TrueTypeFont;
@@ -110,206 +112,219 @@ public class Main {
     private static String[] args;
     public static int run(String[] args) {
         Main.args = args;
-
+        System.out.println("Enabling Mods");
+        for (ModContainer container : ModContainer.getLoadedMods()) {
+            ModInitializer[] initializers = container.getEntrypoints("main", ModInitializer.class);
+            System.out.println("Amount of initializers: " + initializers.length);
+            for (ModInitializer initializer : initializers) {
+                initializer.onEnable();
+            }
+        }
+        System.out.println(Main.class.getClassLoader());
         System.out.println(String.format("Amount of Loadables: %d\nLoadables: %s", loadables.length, Arrays.toString(loadables)));
 
         Thread renderThread = new Thread(() -> {
-            if (!GLFW.glfwInit()) {
-                System.out.println("Couldn't initialize GLFW");
-                System.exit(-1);
-            }
-
-            handle = GLFW.glfwCreateWindow(800,600,"Test",0,0);
-            editorCamera = new Camera(new Vector2f(),new Vector2i(800,600), new AtomicFloat(1));
-            overworldCamera = new Camera(new Vector2f(),new Vector2i(800,600), new AtomicFloat(1));
-            underworldCamera = new Camera(new Vector2f(),new Vector2i(800,600), new AtomicFloat(1));
-            camera = new SwapCamera(editorCamera, overworldCamera,underworldCamera){
-                @Override
-                public int getCamera() {
-                    return Main.currentScreen instanceof EditorScreen ? 0 : drawingUnderworld ? 2 : 1;
-                }
-            };
-            GLFW.glfwMakeContextCurrent(handle);
-            GL.createCapabilities();
-
-            loadShaders();
-            loadTextures();
-
-            setUniformSampler2DArray(uiBasic,"textures",textures);
-            setUniformVec4(uiBasic,"shaderColor", new Vector4f(1f,1f,1f,1f));
-            setUniformSampler2DArray(fragBasic,"textures",textures);
-            setUniformVec4(fragBasic,"shaderColor", new Vector4f(1f,1f,1f,1f));
-            setUniformSampler2DArray(invertedBasic,"textures",textures);
-            setUniformVec4(invertedBasic,"shaderColor", new Vector4f(1f,1f,1f,1f));
-            setUniformSampler2DArray(testBasic,"textures",textures);
-            setUniformVec4(testBasic,"shaderColor", new Vector4f(1f,1f,1f,1f));
-
-            double lastX = -1;
-            double lastY = -1;
-
-            int px = 0;
-            glfwSetScrollCallback(handle, (l, v, v1) -> {
-                double scroll = v1;
-
-                float zoom = camera.sizeMultiplier().getValue();
-                float stepFactor = 1.1f;
-
-                zoom *= (float) Math.pow(stepFactor, -scroll);
-
-                zoom = Math.max(0.1f, Math.min(10f, zoom));
-
-                if (currentScreen instanceof EditorScreen) {
-                    editorCamera.sizeMultiplier().setValue(zoom);
+            try {
+                if (!GLFW.glfwInit()) {
+                    System.out.println("Couldn't initialize GLFW");
+                    System.exit(-1);
                 }
 
-                if (currentScreen != null) {
-                    Vector2d mousePos = getMousePosition();
-                    currentScreen.mouseScrolled(mousePos.x, mousePos.y, v1);
-                }
-                if (currentScreen == null || currentScreen.canMove()){
-                    KeyBindingManager.MouseScrolled((int) scroll);
-                }
-
-            });
-            glfwSetKeyCallback(handle, (l, key, scancode, action, mods) -> {
-                if (currentScreen != null) {
-                    if (action == GLFW_RELEASE) {
-                        currentScreen.keyReleased(key, scancode, mods);
-                    }else if (action == GLFW_PRESS) {
-                        currentScreen.keyPressed(key, scancode, mods);
+                handle = GLFW.glfwCreateWindow(800,600,"Test",0,0);
+                editorCamera = new Camera(new Vector2f(),new Vector2i(800,600), new AtomicFloat(1));
+                overworldCamera = new Camera(new Vector2f(),new Vector2i(800,600), new AtomicFloat(1));
+                underworldCamera = new Camera(new Vector2f(),new Vector2i(800,600), new AtomicFloat(1));
+                camera = new SwapCamera(editorCamera, overworldCamera,underworldCamera){
+                    @Override
+                    public int getCamera() {
+                        return Main.currentScreen instanceof EditorScreen ? 0 : drawingUnderworld ? 2 : 1;
                     }
-                }else {
-                    if (action == GLFW_PRESS) {
-                        if (key == GLFW_KEY_ESCAPE)
-                            setScreen(new StartScreen(Text.literal("Test")));
-                        if (key == GLFW_KEY_0){
-                            setScreen(new EditorScreen(Text.literal("Editor")));
+                };
+                GLFW.glfwMakeContextCurrent(handle);
+                GL.createCapabilities();
+
+                loadShaders();
+                loadTextures();
+
+                setUniformSampler2DArray(uiBasic,"textures",textures);
+                setUniformVec4(uiBasic,"shaderColor", new Vector4f(1f,1f,1f,1f));
+                setUniformSampler2DArray(fragBasic,"textures",textures);
+                setUniformVec4(fragBasic,"shaderColor", new Vector4f(1f,1f,1f,1f));
+                setUniformSampler2DArray(invertedBasic,"textures",textures);
+                setUniformVec4(invertedBasic,"shaderColor", new Vector4f(1f,1f,1f,1f));
+                setUniformSampler2DArray(testBasic,"textures",textures);
+                setUniformVec4(testBasic,"shaderColor", new Vector4f(1f,1f,1f,1f));
+
+                double lastX = -1;
+                double lastY = -1;
+
+                int px = 0;
+                glfwSetScrollCallback(handle, (l, v, v1) -> {
+                    double scroll = v1;
+
+                    float zoom = camera.sizeMultiplier().getValue();
+                    float stepFactor = 1.1f;
+
+                    zoom *= (float) Math.pow(stepFactor, -scroll);
+
+                    zoom = Math.max(0.1f, Math.min(10f, zoom));
+
+                    if (currentScreen instanceof EditorScreen) {
+                        editorCamera.sizeMultiplier().setValue(zoom);
+                    }
+
+                    if (currentScreen != null) {
+                        Vector2d mousePos = getMousePosition();
+                        currentScreen.mouseScrolled(mousePos.x, mousePos.y, v1);
+                    }
+                    if (currentScreen == null || currentScreen.canMove()){
+                        KeyBindingManager.MouseScrolled((int) scroll);
+                    }
+
+                });
+                glfwSetKeyCallback(handle, (l, key, scancode, action, mods) -> {
+                    if (currentScreen != null) {
+                        if (action == GLFW_RELEASE) {
+                            currentScreen.keyReleased(key, scancode, mods);
+                        }else if (action == GLFW_PRESS) {
+                            currentScreen.keyPressed(key, scancode, mods);
+                        }
+                    }else {
+                        if (action == GLFW_PRESS) {
+                            if (key == GLFW_KEY_ESCAPE)
+                                setScreen(new StartScreen(Text.literal("Test")));
+                            if (key == GLFW_KEY_0){
+                                setScreen(new EditorScreen(Text.literal("Editor")));
+                            }
                         }
                     }
-                }
 
-                if (action == GLFW_PRESS) {
-                    if (currentScreen == null || currentScreen.canMove()){
-                        KeyBindingManager.KeyPressed(key);
+                    if (action == GLFW_PRESS) {
+                        if (currentScreen == null || currentScreen.canMove()){
+                            KeyBindingManager.KeyPressed(key);
+                        }
+                    }else if (action == GLFW_RELEASE) {
+                        if (currentScreen == null || currentScreen.canMove()){
+                            KeyBindingManager.KeyReleased(key);
+                        }
+                    }else if (action == GLFW_REPEAT){
+                        if (currentScreen == null || currentScreen.canMove()){
+                            KeyBindingManager.KeyRepeated(key);
+                        }
                     }
-                }else if (action == GLFW_RELEASE) {
-                    if (currentScreen == null || currentScreen.canMove()){
-                        KeyBindingManager.KeyReleased(key);
+                });
+
+                glfwSetMouseButtonCallback(handle, (l, button, action, mods) -> {
+                    if (currentScreen != null) {
+                        if (action == GLFW_RELEASE) {
+                            Vector2d mousePos = getMousePosition();
+                            currentScreen.mouseReleased(mousePos.x,mousePos.y, button);
+                        }else if (action == GLFW_PRESS) {
+                            Vector2d mousePos = getMousePosition();
+                            currentScreen.mouseClicked(mousePos.x,mousePos.y, button);
+                        }
                     }
-                }else if (action == GLFW_REPEAT){
-                    if (currentScreen == null || currentScreen.canMove()){
-                        KeyBindingManager.KeyRepeated(key);
+
+                    if (action == GLFW_PRESS) {
+                        if (currentScreen == null || currentScreen.canMove()){
+                            KeyBindingManager.MouseClicked(button);
+                        }
+                    }else if (action == GLFW_RELEASE) {
+                        if (currentScreen == null || currentScreen.canMove()){
+                            KeyBindingManager.MouseReleased(button);
+                        }
                     }
-                }
-            });
+                });
 
-            glfwSetMouseButtonCallback(handle, (l, button, action, mods) -> {
-                if (currentScreen != null) {
-                    if (action == GLFW_RELEASE) {
-                        Vector2d mousePos = getMousePosition();
-                        currentScreen.mouseReleased(mousePos.x,mousePos.y, button);
-                    }else if (action == GLFW_PRESS) {
-                        Vector2d mousePos = getMousePosition();
-                        currentScreen.mouseClicked(mousePos.x,mousePos.y, button);
+                glfwSetCharCallback(handle, (l, character) -> {
+                    char typed = (char)character;
+                    if (currentScreen != null) {
+                        currentScreen.charTyped(character);
                     }
-                }
+                });
 
-                if (action == GLFW_PRESS) {
-                    if (currentScreen == null || currentScreen.canMove()){
-                        KeyBindingManager.MouseClicked(button);
+                windowResized(handle,800,600);
+                glfwSetCursorPosCallback(handle, (l, x, y) -> {
+                    if (currentScreen != null) {
+                        currentScreen.mouseMoved(x,y);
                     }
-                }else if (action == GLFW_RELEASE) {
-                    if (currentScreen == null || currentScreen.canMove()){
-                        KeyBindingManager.MouseReleased(button);
+                });
+                glfwSetWindowSizeCallback(handle, Main::windowResized);
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                setScreen(new StartScreen(Text.literal("Hi")));
+                paused = false;
+                while (!GLFW.glfwWindowShouldClose(handle)) {
+                    GLFW.glfwPollEvents();
+
+                    paused = currentScreen != null && currentScreen.shouldPause();
+
+                    double[] x = new double[1];
+                    double[] y = new double[1];
+                    GLFW.glfwGetCursorPos(handle, x, y);
+                    double mouseX = x[0];
+                    double mouseY = y[0];
+
+                    double dx = 0;
+                    double dy = 0;
+
+                    if (lastX >= 0 && lastY >= 0) {
+                        dx = mouseX - lastX;
+                        dy = mouseY - lastY;
                     }
-                }
-            });
 
-            glfwSetCharCallback(handle, (l, character) -> {
-                char typed = (char)character;
-                if (currentScreen != null) {
-                    currentScreen.charTyped(character);
-                }
-            });
-
-            windowResized(handle,800,600);
-            glfwSetCursorPosCallback(handle, (l, x, y) -> {
-                if (currentScreen != null) {
-                    currentScreen.mouseMoved(x,y);
-                }
-            });
-            glfwSetWindowSizeCallback(handle, Main::windowResized);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-            setScreen(new StartScreen(Text.literal("Hi")));
-            paused = false;
-            while (!GLFW.glfwWindowShouldClose(handle)) {
-                GLFW.glfwPollEvents();
-
-                paused = currentScreen != null && currentScreen.shouldPause();
-
-                double[] x = new double[1];
-                double[] y = new double[1];
-                GLFW.glfwGetCursorPos(handle, x, y);
-                double mouseX = x[0];
-                double mouseY = y[0];
-
-                double dx = 0;
-                double dy = 0;
-
-                if (lastX >= 0 && lastY >= 0) {
-                    dx = mouseX - lastX;
-                    dy = mouseY - lastY;
-                }
-
-                lastX = mouseX;
-                lastY = mouseY;
-                GL33.glClearColor(0.36078432f, 0.36078432f, 0.36078432f, 1);
-                GL33.glClear(GL33.GL_COLOR_BUFFER_BIT);
-                for (Runnable runnable : Main.executeOnNextRenderThreadCall) {
-                    runnable.run();
-                }
-                executeOnNextRenderThreadCall.clear();
-                if (currentScreen instanceof EditorScreen editorScreen){
-                    if (glfwGetMouseButton(handle,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS){
-                        System.out.println(dx + " " + dy);
-                        editorCamera.position().x += (int) (dx * editorCamera.sizeMultiplier().getValue());
+                    lastX = mouseX;
+                    lastY = mouseY;
+                    GL33.glClearColor(0.36078432f, 0.36078432f, 0.36078432f, 1);
+                    GL33.glClear(GL33.GL_COLOR_BUFFER_BIT);
+                    for (Runnable runnable : Main.executeOnNextRenderThreadCall) {
+                        runnable.run();
                     }
-                    editorCamera.position().y = -(editorCamera.getSize().y / 2 - 64) + (editorScreen.getYOff() * 128);
+                    executeOnNextRenderThreadCall.clear();
+                    if (currentScreen instanceof EditorScreen editorScreen){
+                        if (glfwGetMouseButton(handle,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS){
+                            System.out.println(dx + " " + dy);
+                            editorCamera.position().x += (int) (dx * editorCamera.sizeMultiplier().getValue());
+                        }
+                        editorCamera.position().y = -(editorCamera.getSize().y / 2 - 64) + (editorScreen.getYOff() * 128);
+                    }
+
+                    int xOff = (getKeyBool(GLFW_KEY_A,handle) - getKeyBool(GLFW_KEY_D,handle));
+                    px -= xOff;
+
+
+                    glUseProgram(fragBasic);
+                    drawingUnderworld = false;
+                    setUniformVec2(fragBasic,"uCamPos",new Vector2f(camera.position()));
+                    setUniformVec2(fragBasic,"viewportSize",new Vector2f(camera.getSize()));
+                    DrawContext ctx = new DrawContext(batch);
+                    batch.begin();
+                    drawWorld(ctx,false);
+                    batch.flush();
+
+
+                    glUseProgram(invertedBasic);
+                    drawingUnderworld = true;
+                    setUniformVec2(invertedBasic,"uCamPos",new Vector2f(camera.position()));
+                    setUniformVec2(invertedBasic,"viewportSize",new Vector2f(camera.getSize()));
+
+                    batch.begin();
+                    drawWorld(ctx,true);
+                    batch.flush();
+
+                    drawUi();
+
+                    GLFW.glfwSwapBuffers(handle);
                 }
-
-                int xOff = (getKeyBool(GLFW_KEY_A,handle) - getKeyBool(GLFW_KEY_D,handle));
-                px -= xOff;
-
-
-                glUseProgram(fragBasic);
-                drawingUnderworld = false;
-                setUniformVec2(fragBasic,"uCamPos",new Vector2f(camera.position()));
-                setUniformVec2(fragBasic,"viewportSize",new Vector2f(camera.getSize()));
-                DrawContext ctx = new DrawContext(batch);
-                batch.begin();
-                drawWorld(ctx,false);
-                batch.flush();
-
-
-                glUseProgram(invertedBasic);
-                drawingUnderworld = true;
-                setUniformVec2(invertedBasic,"uCamPos",new Vector2f(camera.position()));
-                setUniformVec2(invertedBasic,"viewportSize",new Vector2f(camera.getSize()));
-
-                batch.begin();
-                drawWorld(ctx,true);
-                batch.flush();
-
-                drawUi();
-
-                GLFW.glfwSwapBuffers(handle);
+            }catch (Throwable e){
+                throw new RuntimeException(e);
+            } finally {
+                GLFW.glfwTerminate();
+                GLFW.glfwTerminate();
+                batch.destroy();
+                System.exit(0);
             }
-            GLFW.glfwTerminate();
-            GLFW.glfwTerminate();
-            batch.destroy();
-            System.exit(0);
         });
         renderThread.start();
         KeyBinds.init();
